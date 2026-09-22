@@ -32,7 +32,7 @@ sandbox\
 │   └── deep5.txt         47 B   5 层深，测递归
 ├── sub\deep\
 │   └── c.txt            134 B   2 层深，hello 在第 2、4 行
-└── empty_dir\             0 B   空目录
+└── empty_dir\             0 B   ⚠️ 空目录（Git 不跟踪，clone 后需手动建，见场景 4）
 ```
 
 **共 12 个文件含 `hello`，合计 15 行匹配** —— 分散在平铺、子目录、深层三种位置，
@@ -80,8 +80,18 @@ fastmcp call .\agent_mcp.py read_file path=blank.txt
 fastmcp call .\agent_mcp.py list_dir  path=empty_dir
 ```
 
-**`list_dir` 对空目录返回 `（空目录）`** ✅
-**`read_file` 对空文件返回什么？** ← 见「已知问题 1」
+**期望**：
+
+- `empty.txt` / `blank.txt` → `（... 是空文件，或只有空白字符）`
+- `empty_dir` → `（空目录）`
+
+> ⚠️ **先看这条**：`empty_dir` 是**空目录**，而 **Git 不跟踪空目录** ——
+> 仓库里根本没有它，clone 下来这条会变成"错误：目录不存在"。
+>
+> 跑之前先建：`mkdir sandbox\empty_dir`
+>
+> 这不是 bug，是 Git 的固有行为（`git status` 也不报，完全静默）。
+> 也**不要**往里面放 `.gitkeep` —— 那样目录就不空了，`（空目录）` 这个分支永远测不到。
 
 ### 场景 5：编码
 
@@ -90,7 +100,7 @@ fastmcp call .\agent_mcp.py read_file path=gbk.txt
 fastmcp call .\agent_mcp.py read_file path=bom.txt
 ```
 
-- `gbk.txt` → 应该被 `UnicodeDecodeError` 接住（措辞见「已知问题 3」）
+- `gbk.txt` → 应该被 `UnicodeDecodeError` 接住（措辞见「问题 3」）
 - `bom.txt` → 能读，但**首字符是看不见的 `\ufeff`**（正常现象，BOM 就是这么工作的）
 
 ### 场景 6：特殊文件名

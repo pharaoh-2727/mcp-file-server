@@ -224,15 +224,31 @@ fastmcp call agent_mcp.py search_content path=. keyword=hello
 mcp-file-server/
 ├── agent_mcp.py       # Server 本体（四个工具 + _safe）
 ├── README.md
+├── TEST-CASES.md      # 测试样本清单 + 分场景测试命令 + 问题记录
 ├── pyproject.toml
+├── .gitignore
+├── LICENSE
 └── sandbox/           # 沙箱根目录 = BASE_DIR，模型只能在这里操作
-    ├── notes.txt
-    ├── second.txt
-    ├── bin.dat        # 二进制文件，用于验证"读不了就跳过"
-    └── sub/
-        └── deep/
-            └── c.txt  # 两层深，用于验证递归搜索
+    ├── notes.txt / second.txt      # 普通文本
+    ├── empty.txt / blank.txt       # 0 字节 / 纯空白
+    ├── gbk.txt / bom.txt           # GBK 编码 / UTF-8 BOM
+    ├── crlf.txt                    # CRLF 换行
+    ├── bin.dat                     # 假二进制 → 验证"读不了就跳过"
+    ├── long.txt                    # needle 命中 60 行 → 验证结果上限
+    ├── hello_big.txt               # 190 KB → 验证大文件截断
+    ├── huge_line.txt               # 单行 50 KB → 验证单条截断
+    ├── edge_20000.txt / edge_20001.txt   # 长度上限的边界值
+    ├── no_extension / my notes.txt / 中文文件.txt
+    ├── empty_dir/                  # 空目录 → 验证「（空目录）」
+    ├── docs/ logs/                 # 子目录，验证递归
+    ├── data/2026/09/report/         # 5 层深
+    └── sub/deep/c.txt              # 关键词在第 2、4 行 → 验证递归 + 行号
 ```
+
+> ⚠️ **`empty_dir/` 是空目录，而 Git 不跟踪空目录** —— clone 下来它不存在。
+> 要跑 `list_dir path=empty_dir` 这条测试，先手动创建：`mkdir sandbox\empty_dir`。
+
+**每个样本具体测哪个分支，见 [`TEST-CASES.md`](TEST-CASES.md) 的「一、样本清单」。**
 
 **`sandbox` 与脚本同级** —— `BASE_DIR = Path(__file__).resolve().parent / "sandbox"`。
 整个目录可以随意搬动/改名，不需要改代码。
